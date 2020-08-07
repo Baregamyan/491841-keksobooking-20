@@ -1,5 +1,10 @@
 'use strict';
 
+/** Кейкоды клавиш */
+var Keycode = {
+  ESC: 27
+};
+
 /**
  * Возвращает случайное число.
  * @param {number} min - Минимально-возможное число.
@@ -32,6 +37,7 @@ function shuffleArray(array) {
 }
 
 window.utils = {
+  keycode: Keycode,
   randomInit: getRandomInit,
   shuffle: shuffleArray
 };
