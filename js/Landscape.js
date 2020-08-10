@@ -5,15 +5,34 @@ var MOCKS_QUANTITY = 8;
 /** Конструктор карты. */
 function Landscape() {
   this.landscape = document.querySelector('.map');
-  this.pin = this.landscape.querySelector('.map__pin--main');
-
+  this.pin = {
+    element: this.landscape.querySelector('.map__pin--main'),
+    getX: function () {
+      return this.element.offsetLeft + (this.element.offsetWidth / 2);
+    },
+    getY: function (isCenter) {
+      if (isCenter) {
+        return this.element.offsetLeft - (this.element.offsetHeight / 2);
+      } else {
+        return this.element.offsetTop - this.element.offsetHeight;
+      }
+    }
+  };
+  this.landscape.querySelector('.map__pin--main');
   this.isCardOpen = false;
-  this.onPinClick = this.init.bind(this);
-  this.pin.addEventListener('click', this.onPinClick);
+  this.onPinMousedown = this.init.bind(this);
+  this.onPinKeydown = this.keydown.bind(this);
+  this.pin.element.addEventListener('mousedown', this.onPinMousedown);
+  this.pin.element.addEventListener('keydown', this.onPinKeydown);
+  this.form = new window.Form();
+  this.form.setAddress(this.pin.getX(), this.pin.getY(true));
 }
 
 /** Инициализирует карту. */
 Landscape.prototype.init = function () {
+  this.landscape.classList.toggle('map--faded', false);
+  this.form.enable();
+  this.form.setAddress(this.pin.getX(), this.pin.getY());
   this.renderOffers(this.getMocks(MOCKS_QUANTITY));
 };
 
@@ -67,6 +86,16 @@ Landscape.prototype.showCard = function (data) {
 Landscape.prototype.closeCard = function () {
   this.isCardOpen = false;
   this.card.hide(this.landscape);
+};
+
+/**
+ * Слушатель нажатия клавиши.
+ * @param {KeyboardEvent} evt - Событие нажатия клавиши.
+ */
+Landscape.prototype.keydown = function (evt) {
+  if (evt.keyCode === window.utils.ENTER) {
+    this.init.bind(this);
+  }
 };
 
 window.Landscape = Landscape;
