@@ -20,9 +20,9 @@
         MAX: 1000000,
         getRule: function (type) {
           if (type === 'min') {
-            return 'Цена не должна быть меньше ' + this.MIN + '.';
+            return 'Цена должна быть больше ' + this.MIN + '.';
           } else {
-            return 'Цена не должна быть больше ' + this.MAX + '.';
+            return 'Цена не должна превышать ' + this.MAX + '.';
           }
         }
       },
@@ -31,9 +31,9 @@
         MAX: 1000000,
         getRule: function (type) {
           if (type === 'min') {
-            return 'Цена не должна быть меньше ' + this.MIN + '.';
+            return 'Цена должна быть больше ' + this.MIN + '.';
           } else {
-            return 'Цена не должна быть больше ' + this.MAX + '.';
+            return 'Цена не должна превышать ' + this.MAX + '.';
           }
         }
       },
@@ -42,9 +42,9 @@
         MAX: 1000000,
         getRule: function (type) {
           if (type === 'min') {
-            return 'Цена не должна быть меньше ' + this.MIN + '.';
+            return 'Цена должна быть больше ' + this.MIN + '.';
           } else {
-            return 'Цена не должна быть больше ' + this.MAX + '.';
+            return 'Цена не должна превышать ' + this.MAX + '.';
           }
         }
       },
@@ -53,9 +53,9 @@
         MAX: 1000000,
         getRule: function (type) {
           if (type === 'min') {
-            return 'Цена не должна быть меньше ' + this.MIN + '.';
+            return 'Цена должна быть меньше ' + this.MIN + '.';
           } else {
-            return 'Цена не должна быть больше ' + this.MAX + '.';
+            return 'Цена не должна превышать ' + this.MAX + '.';
           }
         }
       },
