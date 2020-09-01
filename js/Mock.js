@@ -36,6 +36,7 @@
     * @param {number} config.LOCATION.X.MIN - Минимально-возможное расположение объявления на карте по горизонтали.
     * @param {number} config.LOCATION.Y.MIN - Минимально-возможное расположение объявления на карте по вертикали.
     * @param {number} config.LOCATION.Y.MIN - Максимально-возможное расположение объявления на карте по вертикали.
+    * @return {Object} - Возвращает мок.
     */
   function Mock(number, config) {
     this.config = config || Config;
@@ -59,6 +60,7 @@
       x: window.utils.randomInit(this.config.LOCATION.X.MIN, this.getMapWidth()),
       y: window.utils.randomInit(this.config.LOCATION.Y.MIN, this.config.LOCATION.Y.MAX)
     };
+    return this;
   }
 
   /**

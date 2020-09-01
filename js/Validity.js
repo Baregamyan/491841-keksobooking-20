@@ -60,7 +60,7 @@
         }
       },
       REGEXP: {
-        RULE: 'Поле может содержать только ',
+        RULE: 'Поле может содержать только цифры.',
         VALUE: new RegExp('[0-9]')
       }
     },
@@ -179,6 +179,7 @@
    * @param {HTMLElement} element - Поле, которое необходимо прогнать.
    */
   Validity.prototype.check = function (element) {
+    this.isValid = true;
     var field = {
       element: element,
       rules: [],
@@ -202,6 +203,7 @@
       }
       this.renderRules(field);
       if (field.errors.length) {
+        this.isValid = false;
         field.element.setCustomValidity(field.errors.join('\n'));
         field.element.style = 'box-shadow: 0px 0px 2px 2px red; outline: 1px solid red';
       } else {
@@ -393,6 +395,13 @@
 
     for (var i = 0; i < this.fields.length; i++) {
       this.fields[i].removeEventListener('focus', this.onFieldFocus);
+    }
+  };
+
+  Validity.prototype.checkAll = function () {
+    for (var i = 0; i < this.fields.length; i++) {
+      var field = this.fields[i];
+      this.check(field);
     }
   };
 

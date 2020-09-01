@@ -50,16 +50,19 @@
     this.onPinKeydown = this.keydown.bind(this);
     this.pin.element.addEventListener('click', this.onPinClick);
     this.pin.element.addEventListener('keydown', this.onPinKeydown);
-    this.form = new window.Form();
+    this.form = new window.Form(this.deactivateMap.bind(this));
     this.form.disable();
     this.form.setAddress(this.pin.getX(), this.pin.getY(true));
   }
 
   Landscape.prototype.click = function (evt) {
     evt.preventDefault();
+    this.get = new window.Get(this.renderOffers.bind(this));
+    // this.backend.getData(this.renderOffers.bind(this));
     this.onPinMousedown = this.mousedown.bind(this);
     this.pin.element.addEventListener('mousedown', this.onPinMousedown);
-    this.init();
+    this.activateMap();
+    // this.upload = new window.Upload(this);
   };
 
   Landscape.prototype.mousedown = function (evt) {
@@ -104,12 +107,22 @@
   };
 
   /** Инициализирует карту. */
-  Landscape.prototype.init = function () {
+  Landscape.prototype.activateMap = function () {
     this.pin.element.removeEventListener('click', this.onPinClick);
     this.landscape.classList.toggle('map--faded', false);
     this.form.enable();
     this.form.setAddress(this.pin.getX(), this.pin.getY());
     this.renderOffers(this.getMocks(MOCKS_QUANTITY));
+  };
+
+  Landscape.prototype.deactivateMap = function () {
+    this.pin.element.addEventListener('click', this.onPinClick);
+    this.landscape.classList.toggle('map--faded', true);
+    this.form.disable();
+    var _offers = this.landscape.querySelectorAll('.map__pin:not(.map__pin--main)');
+    _offers.forEach(function (offer) {
+      offer.remove();
+    });
   };
 
   /**
