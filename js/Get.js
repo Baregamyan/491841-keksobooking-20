@@ -37,8 +37,8 @@
     UNKNOW_ERROR: 'Неизвестная ошибка! Перезагрузите сайт.'
   };
 
-  function Get(renderData) {
-    this.renderData = renderData;
+  function Get(landScape) {
+    this.landScape = landScape;
     this.config = Config;
 
     this.xhr = new XMLHttpRequest();
@@ -46,7 +46,7 @@
     this.xhr.responseType = 'json';
     this.xhr.timeout = this.config.TIMEOUT.MS;
 
-    this.xhr.open('GET', 'https://javascript.pages.academy/keksobooking/data');
+    this.xhr.open('GET', 'https://javascript.pages.academy/keksobooking');
 
     this.onXhrLoad = this.load.bind(this);
     this.onXhrError = this.error.bind(this);
@@ -67,7 +67,7 @@
       message = config.MESSAGE;
       if (config.IS_SUCCESS) {
         result = 'success';
-        this.renderData(this.xhr.response);
+        this.landScape.activate(this.xhr.response);
       } else {
         result = 'error';
       }
@@ -75,7 +75,7 @@
       result = 'error';
       message = this.config.UNKNOW_ERROR;
     }
-    this.form.showMessage(message, result);
+    this.message = new window.Message(message, result);
   };
 
   Get.prototype.error = function () {
@@ -86,14 +86,12 @@
     } else {
       message = this.currentConfig.UNKNOW_ERROR;
     }
-    this.form.showMessage(message, 'error');
+    this.message = new window.Message(message, 'error');
   };
 
   Get.prototype.timeout = function (message) {
-    this.form.showMessage(message, false);
+    this.message = new window.Message(message, 'error');
   };
 
-  Get.prototype.data = function () {
-
-  };
+  window.Get = Get;
 })();

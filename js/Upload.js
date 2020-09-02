@@ -42,19 +42,18 @@
     this.config = Config;
     this.form = form;
     this.formEl = this.form.form;
-    this.currentConfig = this.config.UPLOAD;
 
     var data = new FormData(this.formEl);
     this.xhr = new XMLHttpRequest();
 
     this.xhr.responseType = 'json';
-    this.xhr.timeout = this.currentConfig.TIMEOUT.MS;
+    this.xhr.timeout = this.config.TIMEOUT.MS;
 
     this.xhr.open('POST', 'https://javascript.pages.academy/keksobooking');
 
     this.onXhrLoad = this.load.bind(this);
     this.onXhrError = this.error.bind(this);
-    this.onXhrTimeout = this.timeout.bind(this, this.currentConfig.TIMEOUT.MESSAGE);
+    this.onXhrTimeout = this.timeout.bind(this, this.config.TIMEOUT.MESSAGE);
 
     this.xhr.addEventListener('load', this.onXhrLoad);
     this.xhr.addEventListener('error', this.onXhrError);
@@ -64,7 +63,7 @@
   }
 
   Upload.prototype.load = function () {
-    var config = this.currentConfig[this.xhr.status];
+    var config = this.config[this.xhr.status];
     var message;
     var result;
     if (config) {
@@ -76,24 +75,24 @@
       }
     } else {
       result = 'error';
-      message = this.currentConfig.UNKNOW_ERROR;
+      message = this.config.UNKNOW_ERROR;
     }
-    this.form.showMessage(message, result);
+    this.message = new window.Message(message, result, this.form);
   };
 
   Upload.prototype.error = function () {
-    var config = this.currentConfig[this.xhr.status];
+    var config = this.config[this.xhr.status];
     var message;
     if (config) {
       message = config.MESSAGE;
     } else {
-      message = this.currentConfig.UNKNOW_ERROR;
+      message = this.config.UNKNOW_ERROR;
     }
-    this.form.showMessage(message, 'error');
+    this.message = new window.Message(message, 'error', this.form);
   };
 
   Upload.prototype.timeout = function (message) {
-    this.form.showMessage(message, false);
+    this.message = new window.Message(message, 'error', this.form);
   };
 
   window.Upload = Upload;

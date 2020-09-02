@@ -37,8 +37,9 @@
     },
     UNKNOW_ERROR: 'Неизвестная ошибка! Перезагрузите сайт.'
   };
-  function Form(diactivateMap) {
-    this.diactivateMap = diactivateMap;
+
+  function Form(landscape) {
+    this.landscape = landscape;
     this.config = Config;
     this.form = document.querySelector('.ad-form');
     this.input = {
@@ -57,14 +58,27 @@
   }
 
   Form.prototype.disable = function () {
+    this.form.removeEventListener('submit', this.onFormSubmit);
+    this.form.classList.toggle('ad-form--disabled', true);
     this.fieldsets = this.form.querySelectorAll('fieldset');
     this.sendButton.toggleAttribute('disabled', true);
-    this.form.classList.toggle('ad-form--disabled', true);
 
     for (var i = 0; i < this.fieldsets.length; i++) {
       var _fieldset = this.fieldsets[i];
       _fieldset.setAttribute('disabled', true);
     }
+
+    var _rules = this.form.querySelectorAll('.rule');
+    _rules.forEach(function (rule) {
+      rule.remove();
+    });
+
+    for (var element in this.input) {
+      if (this.input.hasOwnProperty(element)) {
+        this.input[element].style = 'box-shadow: initial; outline: initial;';
+      }
+    }
+    this.landscape.deactivate();
   };
 
   Form.prototype.enable = function () {
@@ -90,53 +104,9 @@
     evt.preventDefault();
     this.validity.checkAll();
     this.upload = new window.Upload(this);
-    // this.backend.upload(this);
     if (this.validity.isValid) {
       this.sendButton.toggleAttribute('disabled', true);
       this.form.reset();
-    }
-  };
-
-  Form.prototype.showMessage = function (message, result) {
-    this.main = document.querySelector('main');
-
-    this.messageTemplate = document.querySelector('#' + result).cloneNode(true).content;
-
-    this.messageTemplate.querySelector('.' + result + '__message').textContent = message;
-
-    this.onKeydown = this.keydown.bind(this);
-    this.onCloseButtonClick = this.hideMessage.bind(this);
-
-    if (result === 'error') {
-      this.closeButton = this.messageTemplate.querySelector('.error__button');
-      this.closeButton.addEventListener('click', this.onCloseButtonClick);
-    }
-
-    this.main.appendChild(this.messageTemplate);
-    document.addEventListener('keydown', this.onKeydown);
-  };
-
-  Form.prototype.hideMessage = function () {
-    var _rules = this.form.querySelectorAll('.rule');
-    _rules.forEach(function (rule) {
-      rule.remove();
-    });
-    for (var element in this.input) {
-      if (this.input.hasOwnProperty(element)) {
-        this.input[element].style = 'box-shadow: initial; outline: initial;';
-      }
-    }
-    if (this.closeButton) {
-      this.closeButton.removeEventListener('click', this.onCloseButtonClick);
-    }
-    this.main.lastElementChild.remove();
-    this.diactivateMap();
-    document.removeEventListener('keydown', this.onKeydown);
-  };
-
-  Form.prototype.keydown = function (evt) {
-    if (evt.keyCode === window.utils.keycode.ESC) {
-      this.hideMessage();
     }
   };
 
