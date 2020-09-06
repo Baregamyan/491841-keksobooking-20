@@ -1,12 +1,26 @@
 'use strict';
 (function () {
-  var MOCKS_QUANTITY = 8;
+  var OFFERS_MAX_QUANTITY = 5;
 
   var Config = {
     COORDS_LIMIT: {
       Y: {
         MIN: 130,
         MAX: 630
+      }
+    },
+    PRICE_LEVEL: {
+      MIDDLE: {
+        MIN: 10000,
+        MAX: 50000
+      },
+      LOW: {
+        MIN: null,
+        MAX: 10000
+      },
+      HIGHT: {
+        MIN: 10000,
+        MAX: null
       }
     }
   };
@@ -43,7 +57,9 @@
         this.element.style.left = Coord.x + 'px';
       }
     };
+
     this.isCardOpen = false;
+    this.isOffersRendered = false;
 
     this.onPinClick = this.click.bind(this);
     this.onPinKeydown = this.keydown.bind(this);
@@ -51,15 +67,39 @@
     this.pin.element.addEventListener('click', this.onPinClick);
     this.pin.element.addEventListener('keydown', this.onPinKeydown);
 
+    this.filter = {
+      element: this.landscape.querySelector('.map__filters'),
+      getType: function () {
+        return this.element.querySelector('[name="housing-type"]').value;
+      },
+      getPrice: function () {
+        return this.element.querySelector('[name="housing-price"]').value;
+      },
+      getRooms: function () {
+        return this.element.querySelector('[name="housing-rooms"]').value;
+      },
+      getGuests: function () {
+        return this.element.querySelector('[name="housing-guests"]').value;
+      },
+      getFeatures: function () {
+        var checked = [];
+        var features = this.element.querySelectorAll('.map__checkbox:checked');
+        features.forEach(function (feature) {
+          checked.push(feature.value);
+        });
+        return checked;
+      }
+    };
+
     this.form = new window.Form(this);
     this.form.disable.bind(this);
     this.form.setAddress(this.pin.getX(), this.pin.getY(true));
 
-    this.get = new window.Get(this);
   }
 
   Landscape.prototype.click = function (evt) {
     evt.preventDefault();
+
 
     this.onPinMousedown = this.mousedown.bind(this);
     this.pin.element.addEventListener('mousedown', this.onPinMousedown);
@@ -112,16 +152,113 @@
     this.landscape.classList.toggle('map--faded', false);
     this.form.enable();
     this.form.setAddress(this.pin.getX(), this.pin.getY());
-    this.renderOffers(this.getMocks());
+    this.data = this.getMocks(OFFERS_MAX_QUANTITY);
+    this.renderOffers(this.data);
+    this.onFilterFormChange = this.renderOffers.bind(this, this.data);
+
+    this.filter.element.addEventListener('change', this.onFilterFormChange);
   };
 
   Landscape.prototype.deactivate = function () {
+    if (this.isOffersRendered) {
+      this.cleanLandscape();
+    }
     this.pin.element.addEventListener('click', this.onPinClick);
+    this.filter.element.removeEventListener('change', this.onFilterFormChange);
     this.landscape.classList.toggle('map--faded', true);
+  };
+
+  Landscape.prototype.filterType = function (data) {
+    var type = this.filter.getType();
+    var filteredData;
+    if (type !== 'any') {
+      filteredData = data.filter(function (item) {
+        return item.offer.type === type;
+      });
+    } else {
+      filteredData = data;
+    }
+    return filteredData;
+  };
+
+  Landscape.prototype.filterPrice = function (data) {
+    var config = this.config.PRICE_LEVEL[this.filter.getPrice().toUpperCase()];
+    var filteredData;
+    if (!config) {
+      filteredData = data;
+    } else {
+      filteredData = data.filter(function (item) {
+        return item.offer.price <= config.MAX && item.offer.price >= config.MIN;
+      });
+    }
+    return filteredData;
+  };
+
+  Landscape.prototype.filterRooms = function (data) {
+    var rooms = this.filter.getRooms();
+    var filteredData;
+    if (rooms === 'any') {
+      filteredData = data;
+    } else {
+      filteredData = data.filter(function (item) {
+        return item.offer.rooms === +rooms;
+      });
+    }
+    return filteredData;
+  };
+
+  Landscape.prototype.filterFeatures = function (data) {
+    var features = this.filter.getFeatures();
+    var filteredData;
+    if (!features.length) {
+      filteredData = data;
+    } else {
+      features.forEach(function (feature) {
+        filteredData = data.filter(function (item) {
+          return item.offer.features.includes(feature);
+        });
+      });
+    }
+    return filteredData;
+  };
+
+  Landscape.prototype.filterGuests = function (data) {
+    var guests = this.filter.getGuests();
+    var filteredData;
+    if (guests === 'any') {
+      filteredData = data;
+    } else {
+      filteredData = data.filter(function (item) {
+        return item.offer.guests === +guests;
+      });
+    }
+    return filteredData;
+  };
+
+  Landscape.prototype.filterData = function (data) {
+    var filters = [
+      this.filterType.bind(this),
+      this.filterPrice.bind(this),
+      this.filterRooms.bind(this),
+      this.filterFeatures.bind(this),
+      this.filterGuests.bind(this)
+    ];
+
+    var filteredData = filters.reduce(function (acc, current) {
+      return current(acc);
+    }, data);
+
+    return filteredData;
+  };
+
+  Landscape.prototype.cleanLandscape = function () {
     var _offers = this.landscape.querySelectorAll('.map__pin:not(.map__pin--main)');
-    _offers.forEach(function (offer) {
-      offer.remove();
-    });
+    if (_offers) {
+      _offers.forEach(function (offer) {
+        offer.remove();
+      });
+      this.isOffersRendered = false;
+    }
   };
 
   /**
@@ -144,16 +281,22 @@
    * @param {Array} offers - Объявления.
    */
   Landscape.prototype.renderOffers = function (offers) {
+    this.cleanLandscape();
+    var filteredOffers = this.filterData(offers);
+    if (filteredOffers.length > OFFERS_MAX_QUANTITY) {
+      offers = filteredOffers.slice(0, OFFERS_MAX_QUANTITY + 1);
+    }
     var _container = document.querySelector('.map__pins');
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < offers.length; i++) {
-      var offer = offers[i];
+    for (var i = 0; i < filteredOffers.length; i++) {
+      var offer = filteredOffers[i];
       var pin = new window.Pin(offer.offer.title, offer.author.avatar, offer.location.x, offer.location.y);
       var onPinClick = this.showCard.bind(this, offer);
       pin.addEventListener('click', onPinClick);
       fragment.appendChild(pin);
     }
     _container.appendChild(fragment);
+    this.isOffersRendered = true;
   };
 
   /**
