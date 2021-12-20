@@ -1,5 +1,6 @@
 'use strict';
-
-var Landscape = new window.Landscape();
+(function () {
+  var Landscape = new window.Landscape();
+})();
 
 
